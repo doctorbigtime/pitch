@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Model basefilename="cboe_us_eq_pitch" generate_test_code="false" guard="VPLAT_CBOE_US_EQ_PITCH" idname="TYPE" idtype="u8_t" namespace="cboe_us_eq_pitch">
+  <Includes>
+    <Include name="&lt;cstdint&gt;"/>
+    <Include name="&lt;iostream&gt;"/>
+    <Include name="&lt;vpl/CharArray.hpp&gt;"/>
+  </Includes>
+  <Typedefs>
+    <Typedef name="u8_t" type="u8" dbtype="SMALLINT"/>
+    <Typedef name="u64_t" type="u64" dbtype="BIGINT"/>
+    <Typedef name="u32_t" type="u32" dbtype="INTEGER"/>
+    <Typedef name="u16_t" type="u16" dbtype="SMALLINT"/>
+    <Typedef name="char_t" type="u8" dbtype="CHAR(1)"/>
+    <Typedef name="char_8_t" type="[u8; 8]" dbtype="CHAR(8)"/>
+    <Typedef name="char_6_t" type="[u8; 6]" dbtype="CHAR(6)"/>
+    <Typedef name="char_4_t" type="[u8; 4]" dbtype="CHAR(4)"/>
+    <Typedef name="char_2_t" type="[u8; 2]" dbtype="CHAR(2)"/>
+    <Typedef name="char_21_t" type="[u8; 21]" dbtype="CHAR(21)"/>
+    <Typedef name="char_20_t" type="[u8; 20]" dbtype="CHAR(20)"/>
+    <Typedef name="char_10_t" type="[u8; 10]" dbtype="CHAR(10)"/>
+    <Typedef name="PriceShort_t" type="u16" dbtype="SMALLINT"/>
+    <Typedef name="PriceLong_t" type="u64" dbtype="BIGINT"/>
+    <Typedef name="Multiplier_t" type="u32" dbtype="INTEGER"/>
+  </Typedefs>
+  <Constants>
+    <Constant name="PriceShortDenom" type="u16_t" value="100"/>
+    <Constant name="PriceLongDenom" type="u64_t" value="10000"/>
+    <Constant name="MultiplierDenom" type="u32_t" value="10"/>
+  </Constants>
+  <Enums>
+    <!--
+    <Enum name="AON" type="char_t" dbtype="SMALLINT">
+      <Value name="order_is_a_firm_quote" value="\x00"/>
+      <Value name="order_is_aon" value="\x01"/>
+    </Enum>
+    -->
+    <Enum name="AuctionType" type="char_t" dbtype="CHAR(1)">
+      <Value name="opening_auction" value="O"/>
+      <Value name="closing_auction" value="C"/>
+      <Value name="halt_auction" value="H"/>
+      <Value name="ipo_auction" value="I"/>
+      <Value name="cboe_market_close" value="M"/>
+      <Value name="gth_opening" value="G"/>
+      <Value name="volatility_opening" value="V"/>
+      <Value name="bats_auction_mechanism" value="B"/>
+      <Value name="solicitation_auction_mechanism" value="S"/>
+      <Value name="step_up_mechanism" value="T"/>
+      <Value name="sum_all_or_none" value="A"/>
+    </Enum>
+    <Enum name="CustomerIndicator" type="char_t" dbtype="CHAR(1)">
+      <Value name="unused" value=" "/>
+      <Value name="non_customer" value="N"/>
+      <Value name="customer" value="C"/>
+      <Value name="retail_order" value="R"/>
+    </Enum>
+    <!--
+    <Enum name="Display" type="char_t" dbtype="SMALLINT">
+      <Value name="order_is_not_displayed_in_the_cboe_sip_quote" value="\x00"/>
+      <Value name="order_is_displayed_in_the_cboe_sip_quote" value="\x01"/>
+    </Enum>
+    -->
+    <Enum name="GapResponseStatus" type="char_t" dbtype="CHAR(1)">
+      <Value name="accepted" value="A"/>
+      <Value name="out_of_range" value="O"/>
+      <Value name="daily_gap_request_allocation_exhausted" value="D"/>
+      <Value name="minute_gap_request_allocation_exhausted" value="M"/>
+      <Value name="second_gap_request_allocation_exhausted" value="S"/>
+      <Value name="count_request_limit_for_one_gap_request_exceeded" value="C"/>
+      <Value name="invalid_unit_specified_in_request" value="I"/>
+      <Value name="unit_is_currently_unavailable" value="U"/>
+    </Enum>
+    <Enum name="GthTradingStatus" type="char_t" dbtype="CHAR(1)">
+      <Value name="unused" value=" "/>
+      <Value name="halted" value="H"/>
+      <Value name="quote_only" value="Q"/>
+      <Value name="trading" value="T"/>
+    </Enum>
+    <Enum name="InstrumentDefinitionResponseStatus" type="char_t" dbtype="CHAR(1)">
+      <Value name="accepted" value="A"/>
+      <Value name="out_of_range" value="O"/>
+      <Value name="spin_already_in_progress" value="S"/>
+    </Enum>
+    <Enum name="LoginResponseStatus" type="char_t" dbtype="CHAR(1)">
+      <Value name="login_accepted" value="A"/>
+      <Value name="not_authorized" value="N"/>
+      <Value name="session_in_use" value="B"/>
+      <Value name="invalid_session" value="S"/>
+    </Enum>
+    <!--
+    <Enum name="MaintainPriority" type="char_t" dbtype="SMALLINT">
+      <Value name="reset_priority" value="\x00"/>
+      <Value name="maintain_priority" value="\x01"/>
+    </Enum>
+    -->
+    <Enum name="OpeningCondition" type="char_t" dbtype="CHAR(1)">
+      <Value name="would_open" value="O"/>
+      <Value name="need_quote_to_open" value="Q"/>
+      <Value name="need_more_buyers" value="B"/>
+      <Value name="need_more_sellers" value="S"/>
+      <Value name="crossed_composite_market" value="C"/>
+    </Enum>
+    <Enum name="RegShoAction" type="char_t" dbtype="CHAR(1)">
+      <Value name="no_price_test_in_effect" value="0"/>
+      <Value name="reg_sho_price_test_restriction_in_effect" value="1"/>
+    </Enum>
+    <Enum name="RetailPriceImprovementKind" type="char_t" dbtype="CHAR(1)">
+      <Value name="buy_side_rpi" value="B"/>
+      <Value name="sell_side_rpi" value="S"/>
+      <Value name="buy_and_sell_rpi" value="A"/>
+      <Value name="no_rpi" value="N"/>
+    </Enum>
+    <Enum name="Side" type="char_t" dbtype="CHAR(1)">
+      <Value name="buy_order" value="B"/>
+      <Value name="sell_order" value="S"/>
+    </Enum>
+    <Enum name="SpinResponseStatus" type="char_t" dbtype="CHAR(1)">
+      <Value name="accepted" value="A"/>
+      <Value name="out_of_range" value="O"/>
+      <Value name="spin_already_in_progress" value="S"/>
+    </Enum>
+    <Enum name="SymbolCondition" type="char_t" dbtype="CHAR(1)">
+      <Value name="normal" value="N"/>
+      <Value name="closing_only" value="C"/>
+    </Enum>
+    <Enum name="TradeCondition" type="char_t" dbtype="CHAR(1)">
+      <Value name="normal_trade" value=" "/>
+      <Value name="single_leg_auction_non_iso" value="a"/>
+      <Value name="single_leg_auction_iso" value="b"/>
+      <Value name="single_leg_cross_non_iso" value="c"/>
+      <Value name="single_leg_cross_iso" value="d"/>
+      <Value name="single_leg_floor_trade" value="e"/>
+      <Value name="complex_to_complex_electronic_trade" value="f"/>
+      <Value name="complex_auction_trade" value="g"/>
+      <Value name="complex_cross" value="h"/>
+      <Value name="complex_floor_trade" value="i"/>
+      <Value name="complex_electronic_trade_against_single_leg" value="j"/>
+      <Value name="complex_with_stock_options_auction_trade" value="k"/>
+      <Value name="complex_auction_against_single_legs" value="l"/>
+      <Value name="complex_floor_trade_against_single_leg" value="m"/>
+      <Value name="complex_with_stock_electronic_trade" value="n"/>
+      <Value name="complex_with_stock_cross" value="o"/>
+      <Value name="complex_with_stock_floor_trade" value="p"/>
+      <Value name="complex_floor_trade_of_proprietary_products" value="t"/>
+      <Value name="opening_trade" value="O"/>
+      <Value name="iso_trade_or_spread_trade" value="S"/>
+      <Value name="spim_trade" value="A"/>
+      <Value name="electronic_trade_or_iso" value="I"/>
+      <Value name="combo_trade" value="C"/>
+      <Value name="cabinet_trade" value="K"/>
+    </Enum>
+    <Enum name="TradingStatusKind" type="char_t" dbtype="CHAR(1)">
+      <Value name="accepting_orders_for_queuing" value="A"/>
+      <Value name="halted" value="H"/>
+      <Value name="quote_only" value="Q"/>
+      <Value name="exchange_specific_suspension" value="S"/>
+      <Value name="trading" value="T"/>
+      <Value name="opening_rotation" value="R"/>
+    </Enum>
+    <Enum name="WidthType" type="char_t" dbtype="CHAR(1)">
+      <Value name="regular" value="R"/>
+      <Value name="volatility" value="V"/>
+    </Enum>
+  </Enums>
+  <Bitfields>
+    <Bitfield len="1" name="add_flags_t" type="u8_t">
+      <Bits name="Display" offset="0" type="Display" byte="1" width="1"/>
+      <Bits name="AON" offset="3" type="AON" byte="1" width="1"/>
+    </Bitfield>
+    <Bitfield len="1" name="modify_flags_t" type="u8_t">
+      <Bits name="Display" offset="0" type="Display" byte="1" width="1"/>
+      <Bits name="MaintainPriority" offset="1" type="MaintainPriority" byte="1" width="1"/>
+    </Bitfield>
+  </Bitfields>
+  <Structs>
+    <Struct id="0x2F" len="45" len2="41" name="add_order_expanded" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Add Order Message (expanded)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Day-specific identifier assigned to this order" len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="B = Buy Order S = Sell Order" len="1" name="side_indicator" offset="14" type="Side"/>
+      <Field comment="Number of shares/contracts being added to the book (may be less than the number entered)." len="4" name="quantity" offset="15" type="u32_t"/>
+      <Field comment="Symbol right padded with spaces. " len="8" name="symbol" offset="19" type="char_8_t"/>
+      <Field comment="The limit order price " len="8" name="price" offset="27" type="PriceLong_t"/>
+      <Field comment="Bit 0 Display 0 = Order is not displayed in the Cboe SIP quote 1 = Order is displayed in the Cboe SIP quote Bits 1 2 Reserved Bit 3 AON (Options only) 0 = Order is a firm quote 1 = Order is AON (All or None) Bits 4-7 Reserved" len="1" name="add_flags" offset="35" type="add_flags_t"/>
+      <Field comment="Optionally specified. If specified, MPID (equities) or Executing Firm ID (options) of firm attributed to this quote. Alternatively &quot;RTAL&quot; for retail specified orders (equities). Space filled otherwise." len="4" name="participantid" offset="36" type="char_4_t"/>
+      <Field comment="BZX/C1/EDGX Options Only, effective on EDGX Equities 07/01/19 (space filled on C2 Options and all equities markets). (Space) = Unused N = Non-Customer C = Customer R = Retail order (effective 07/01/19) (EDGX Equities only)" len="1" name="customer_indicator" offset="40" type="CustomerIndicator"/>
+      <Field comment="Options Only Optional user specified value attributed to this quote. Space filled otherwise." len="4" name="client_id" offset="41" type="char_4_t"/>
+    </Struct>
+    <Struct id="0x21" len="34" name="add_order_long" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Add Order Message (long)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Day-specific identifier assigned to this order" len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="B = Buy Order S = Sell Order" len="1" name="side_indicator" offset="14" type="Side"/>
+      <Field comment="Number of shares/contracts being added to the book (may be less than the number entered)." len="4" name="quantity" offset="15" type="u32_t"/>
+      <Field comment="Symbol right padded with spaces." len="6" name="symbol" offset="19" type="char_6_t"/>
+      <Field comment="The limit order price " len="8" name="price" offset="25" type="PriceLong_t"/>
+      <Field comment="Bit 0 Display 0 = Order is not displayed in the Cboe SIP quote 1 = Order is displayed in the Cboe SIP quote Bits 1 2 Reserved Bit 3 AON (Options only) 0 = Order is a firm quote 1 = Order is AON (All or None) Bits 4-7 Reserved" len="1" name="add_flags" offset="33" type="add_flags_t"/>
+    </Struct>
+    <Struct id="0x22" len="26" name="add_order_short" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Add Order Message (short)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Day-specific identifier assigned to this order" len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="B = Buy Order S = Sell Order" len="1" name="side_indicator" offset="14" type="Side"/>
+      <Field comment="Number of shares/contracts being added to the book (may be less than the number entered)." len="2" name="quantity" offset="15" type="u16_t"/>
+      <Field comment="Symbol right padded with spaces. " len="6" name="symbol" offset="17" type="char_6_t"/>
+      <Field comment="The limit order price " len="2" name="price" offset="23" type="PriceShort_t"/>
+      <Field comment="Bit 0 Display 0 = Order is not displayed in the Cboe SIP quote 1 = Order is displayed in the Cboe SIP quote Bits 1 2 Reserved Bit 3 AON (Options only) 0 = Order is a firm quote 1 = Order is AON (All or None) Bits 4-7 Reserved" len="1" name="add_flags" offset="25" type="add_flags_t"/>
+    </Struct>
+    <Struct id="0xAE" len="14" name="auction_cancel" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Auction Cancel Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Day specific identifier assigned to this auction" len="8" name="auction_id" offset="6" type="u64_t"/>
+    </Struct>
+    <Struct id="0xAD" len="47" name="auction_notification" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Auction Notification Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Symbol right padded with spaces." len="6" name="symbol" offset="6" type="char_6_t"/>
+      <Field comment="Day specific identifier assigned to this auction." len="8" name="auction_id" offset="12" type="u64_t"/>
+      <Field comment="B = Bats Auction Mechanism (BAM) (EDGX Only) or AIM (C1 Only) S = Solicitation Auction Mechanism (C1 Only) T = Step Up Mechanism (SUM) A = SUM All or None" len="1" name="auction_type" offset="20" type="AuctionType"/>
+      <Field comment="&quot;B&quot; or &quot;S&quot;" len="1" name="side" offset="21" type="Side"/>
+      <Field comment="For SUM this will reflect the NBBO price of the opposite side of the auction at the time of entry. For BAM and SAM this will reflect the limit price specified on the order. For AIM this field will be zero." len="8" name="price" offset="22" type="PriceLong_t"/>
+      <Field comment="Number of contracts available in the auction." len="4" name="contracts" offset="30" type="u32_t"/>
+      <Field comment="N = Non-Customer C = Customer" len="1" name="customer_indicator" offset="34" type="CustomerIndicator"/>
+      <Field comment="Executing Broker (optional) of firm attributed to this quote" len="4" name="participantid" offset="35" type="char_4_t"/>
+      <Field comment="Nanosecond offset from last timestamp " len="4" name="auction_end_offset" offset="39" type="u32_t"/>
+      <Field comment="Optional user specified value attributed to this quote." len="4" name="client_id" offset="43" type="char_4_t"/>
+    </Struct>
+    <Struct id="0x96" len="27" name="auction_summary" database="true">
+      <Field comment="Length of this message including this field." len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Auction Summary Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp." len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Stock Symbol right padded with spaces." len="8" name="stock_symbol" offset="6" type="char_8_t"/>
+      <Field comment="O = Opening Auction C = Closing Auction G = GTH Opening H = Halt Auction I = IPO Auction M = Cboe Market Close (effective TBD) V = Volitility Auction" len="1" name="auction_type" offset="14" type="AuctionType"/>
+      <Field comment="Auction price. Price of the CMC match (effective TBD)." len="8" name="price" offset="15" type="PriceLong_t"/>
+      <Field comment="Cumulative number of shares/contracts executed during the auction. Shares executed in the CMC match (effective TBD)." len="4" name="shares_per_contracts" offset="23" type="u32_t"/>
+    </Struct>
+    <Struct id="0xAF" len="34" name="auction_trade" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Auction Trade Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Day specific identifier assigned to this auction" len="8" name="auction_id" offset="6" type="u64_t"/>
+      <Field comment="Day specific identifier assigned to this execution" len="8" name="execution_id" offset="14" type="u64_t"/>
+      <Field comment="Trade price " len="8" name="price" offset="22" type="PriceLong_t"/>
+      <Field comment="Number of contracts traded" len="4" name="contracts" offset="30" type="u32_t"/>
+    </Struct>
+    <Struct id="0x95" len="47" name="auction_update" database="true">
+      <Field comment="Length of this message including this field." len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Auction Update Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp." len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Stock Symbol right padded with spaces." len="8" name="stock_symbol" offset="6" type="char_8_t"/>
+      <Field comment="O = Opening Auction C = Closing Auction H = Halt Auction I = IPO Auction M = Cboe Market Close (effective TBD)" len="1" name="auction_type" offset="14" type="AuctionType"/>
+      <Field comment="BBO Collared auction price (see Auction Process Spec)." len="8" name="reference_price" offset="15" type="PriceLong_t"/>
+      <Field comment="Number of shares on buy side at the Reference Price. Shares matched for Cboe Market Close (effective TBD)." len="4" name="buy_shares" offset="23" type="u32_t"/>
+      <Field comment="Number of shares on sell side at the Reference Price. Shares matched for Cboe Market Close (effective TBD)." len="4" name="sell_shares" offset="27" type="u32_t"/>
+      <Field comment="Price at which the auction book and the continuous book would match." len="8" name="indicative_price" offset="31" type="PriceLong_t"/>
+      <Field comment="Price at which the auction book would match using only Eligible Auction Orders (see Auction Process Spec)." len="8" name="auction_only_price" offset="39" type="PriceLong_t"/>
+    </Struct>
+    <Struct id="0x9E" len="58" name="constituent_symbol_mapping" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Constituent Symbol Mapping Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Symbol right padded with spaces" len="6" name="feed_symbol" offset="2" type="char_6_t"/>
+      <Field comment="OSI Symbol" len="21" name="osi_symbol" offset="8" type="char_21_t"/>
+      <Field comment="N = Normal C = Closing Only" len="1" name="symbol_condition" offset="29" type="SymbolCondition"/>
+      <Field comment="Symbol of underlying equity right padded with spaces" len="8" name="underlying" offset="30" type="char_8_t"/>
+      <Field comment="Dissemination symbol of the final SOQ right padded with spaces." len="20" name="soq_identifier" offset="38" type="char_20_t"/>
+    </Struct>
+    <Struct id="0x29" len="14" name="delete_order" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Delete Order Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Order Id of a previously sent Add Order message that has completely cancelled" len="8" name="order_id" offset="6" type="u64_t"/>
+    </Struct>
+    <Struct id="0x2D" len="6" name="end_of_session" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="End of Session Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="timestamp" offset="2" type="u32_t"/>
+    </Struct>
+    <Struct id="0x03" len="9" name="gap_request" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Gap Request Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Unit that the gap is requested for" len="1" name="unit" offset="2" type="u8_t"/>
+      <Field comment="Sequence of first message (lowest sequence in range)" len="4" name="sequence" offset="3" type="u32_t"/>
+      <Field comment="Count of messages requested" len="2" name="count" offset="7" type="u16_t"/>
+    </Struct>
+    <Struct id="0x04" len="10" name="gap_response" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Gap Response Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Unit the gap was requested for" len="1" name="unit" offset="2" type="u8_t"/>
+      <Field comment="Sequence of first message in request" len="4" name="sequence" offset="3" type="u32_t"/>
+      <Field comment="Count of messages requested" len="2" name="count" offset="7" type="u16_t"/>
+      <Field comment="Accepted or reason for reject" len="1" name="status" offset="9" type="GapResponseStatus"/>
+    </Struct>
+    <Struct id="0x86" len="2" name="instrument_definition_finished" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Instrument Definition Finished Message" len="1" name="message_type" offset="1" type="u8_t"/>
+    </Struct>
+    <Struct id="0x84" len="6" name="instrument_definition_request" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Instrument Definition Request Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Must be 0. Only the current Symbol Mappings and Complex Instrument Definitions are available." len="4" name="sequence" offset="2" type="u32_t"/>
+    </Struct>
+    <Struct id="0x85" len="11" name="instrument_definition_response" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Instrument Definition Response Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Will always be 0." len="4" name="sequence" offset="2" type="u32_t"/>
+      <Field comment="Number of Symbol Mapping and Complex Instrument Definition (if applicable) messages which will be contained in this spin" len="4" name="instrument_count" offset="6" type="u32_t"/>
+      <Field comment="Accepted or reason for reject" len="1" name="status" offset="10" type="InstrumentDefinitionResponseStatus"/>
+    </Struct>
+    <Struct id="0x01" len="22" name="login" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Login Message " len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="SessionSubId supplied by Cboe" len="4" name="sessionsubid" offset="2" type="char_4_t"/>
+      <Field comment="Username supplied by Cboe" len="4" name="username" offset="6" type="char_4_t"/>
+      <Field comment="(space filled)" len="2" name="filler" offset="10" type="char_2_t"/>
+      <Field comment="Password supplied by Cboe" len="10" name="password" offset="12" type="char_10_t"/>
+    </Struct>
+    <Struct id="0x02" len="3" name="login_response" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Login Response Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Accepted or reason for reject" len="1" name="status" offset="2" type="LoginResponseStatus"/>
+    </Struct>
+    <Struct id="0x27" len="27" name="modify_long" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Modify Order Message (long)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Order Id of a previously sent Add Order message that has been modified" len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="Number of shares/contracts associated with this order after this modify (may be less than the number entered)" len="4" name="quantity" offset="14" type="u32_t"/>
+      <Field comment="The limit order price after this modify " len="8" name="price" offset="18" type="PriceLong_t"/>
+      <Field comment="Bit 0 Display 0 = Order is not aggregated in the Cboe SIP quote 1 = Order is aggregated in the Cboe SIP quote Bit 1 Maintain Priority 0 = Reset Priority 1 = Maintain Priority Bits 2-7 Reserved" len="1" name="modify_flags" offset="26" type="modify_flags_t"/>
+    </Struct>
+    <Struct id="0x28" len="19" name="modify_short" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Modify Order Message (short)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Order Id of a previously sent Add Order message that has been modified" len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="Number of shares/contracts associated with this order after this modify (may be less than the number entered)" len="2" name="quantity" offset="14" type="u16_t"/>
+      <Field comment="The limit order price after this modify " len="2" name="price" offset="16" type="PriceShort_t"/>
+      <Field comment="Bit 0 Display 0 = Order is not aggregated in the Cboe SIP quote 1 = Order is aggregated in the Cboe SIP quote Bit 1 Maintain Priority 0 = Reset Priority 1 = Maintain Priority Bits 2-7 Reserved" len="1" name="modify_flags" offset="18" type="modify_flags_t"/>
+    </Struct>
+    <Struct id="0xD1" len="64" name="options_auction_update" database="true">
+      <Field comment="Length of this message including this field." len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Options Auction Update Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp." len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Symbol right padded with spaces." len="8" name="symbol" offset="6" type="char_8_t"/>
+      <Field comment="G = GTH Opening O = RTH Opening H = Halt Re-Opening V = Volatility Opening" len="1" name="auction_type" offset="14" type="AuctionType"/>
+      <Field comment="Collared VMIM price computed on the queuing book only." len="8" name="reference_price" offset="15" type="PriceLong_t"/>
+      <Field comment="Cumulative Buy contracts at the Reference Price and above." len="4" name="buy_contracts" offset="23" type="u32_t"/>
+      <Field comment="Cumulative Sell contracts at the Reference Price and below." len="4" name="sell_contracts" offset="27" type="u32_t"/>
+      <Field comment="Collared VMIM price computed on the combined queueing book and the continuous book. Equal to Reference Price for options that do not have a GTH trading session." len="8" name="indicative_price" offset="31" type="PriceLong_t"/>
+      <Field comment="Uncollared VMIM price computed on the queuing book only." len="8" name="auction_only_price" offset="39" type="PriceLong_t"/>
+      <Field comment="O = Would open Q = Need quote to open B = Need more buyers S = Need more sellers C = Crossed Composite Market" len="1" name="opening_condition" offset="47" type="OpeningCondition"/>
+      <Field comment="Bid Price of the prevailing Composite Market " len="8" name="composite_market_bid_price" offset="48" type="PriceLong_t"/>
+      <Field comment="Offer Price of the prevailing Composite Market." len="8" name="composite_market_offer_price" offset="56" type="PriceLong_t"/>
+    </Struct>
+    <Struct id="0x23" len="27" len2="26" name="order_executed" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Order Executed Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Order Id of a previously sent Add Order message that was executed" len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="Number of shares/contracts executed " len="4" name="executed_quantity" offset="14" type="u32_t"/>
+      <Field comment="Cboe generated day-unique execution identifier of this execution. Execution Id is also referenced in the Trade Break message" len="8" name="execution_id" offset="18" type="u64_t"/>
+      <Field comment="Options Only (byte not sent in Equities) (Space): Normal Trade O: Opening Trade S: Spread Trade A: SPIM Trade I: ISO Trade" len="1" name="trade_condition" offset="26" type="TradeCondition"/>
+    </Struct>
+    <Struct id="0x24" len="39" len2="38" name="order_executed_at_price_size" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Order Executed at Price/Size Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Order Id of a previously sent Add Order message that was executed" len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="Number of shares/contracts executed " len="4" name="executed_quantity" offset="14" type="u32_t"/>
+      <Field comment="Number of shares/contracts remaining after the execution" len="4" name="remaining_quantity" offset="18" type="u32_t"/>
+      <Field comment="Cboe generated day-unique execution identifier of this execution. Execution Id is also referenced in the Trade Break message" len="8" name="execution_id" offset="22" type="u64_t"/>
+      <Field comment="The execution price of the order " len="8" name="price" offset="30" type="PriceLong_t"/>
+      <Field comment="Options Only (byte not sent in Equities) (Space): Normal Trade O: Opening Trade S: Spread Trade A: SPIM Trade I: ISO Trade" len="1" name="trade_condition" offset="38" type="TradeCondition"/>
+    </Struct>
+    <Struct id="0x25" len="18" name="reduce_size_long" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Reduce Size Message (long)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Order Id of a previously sent Add Order message that has been reduced" len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="Number of shares/contracts canceled " len="4" name="canceled_quantity" offset="14" type="u32_t"/>
+    </Struct>
+    <Struct id="0x26" len="16" name="reduce_size_short" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Reduce Size Message (short)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Order Id of a previously sent Add Order message that has been reduced" len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="Number of shares/contracts canceled " len="2" name="canceled_quantity" offset="14" type="u16_t"/>
+    </Struct>
+    <Struct id="0x98" len="15" name="retail_price_improvement" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Retail Price Improvement Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Symbol right padded with spaces." len="8" name="symbol" offset="6" type="char_8_t"/>
+      <Field comment="B = Buy Side RPI S = Sell Side RPI A = Buy &amp; Sell RPI N = No RPI" len="1" name="retail_price_improvement" offset="14" type="RetailPriceImprovementKind"/>
+    </Struct>
+    <Struct len="8" name="sequenced_unit_header" database="false">
+      <Field comment="Length of entire block of messages. Includes this header and Hdr Count messages to follow." len="2" name="hdr_length" offset="0" type="u16_t"/>
+      <Field comment="Number of messages to follow this header." len="1" name="hdr_count" offset="2" type="u8_t"/>
+      <Field comment="Unit that applies to messages included in this header." len="1" name="hdr_unit" offset="3" type="u8_t"/>
+      <Field comment="Sequence of first message to follow this header. " len="4" name="hdr_sequence" offset="4" type="u32_t"/>
+    </Struct>
+    <Struct id="0x9D" len="42" name="soq_strike_range_update" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="SOQ Strike Range Update Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Dissemination symbol of the final SOQ right padded with spaces." len="20" name="soq_identifier" offset="6" type="char_20_t"/>
+      <Field comment="SOQ lower strike price " len="8" name="lower_strike_price" offset="26" type="PriceLong_t"/>
+      <Field comment="SOQ upper strike price " len="8" name="upper_strike_price" offset="34" type="PriceLong_t"/>
+    </Struct>
+    <Struct id="0x83" len="6" name="spin_finished" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Spin Finished Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Sequence number from the Spin Request message" len="4" name="sequence" offset="2" type="u32_t"/>
+    </Struct>
+    <Struct id="0x80" len="6" name="spin_image_available" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Spin Image Available Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Spin is available which is current through this sequence number" len="4" name="sequence" offset="2" type="u32_t"/>
+    </Struct>
+    <Struct id="0x81" len="6" name="spin_request" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Spin Request Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Sequence number from a Spin Image Available message received by the member" len="4" name="sequence" offset="2" type="u32_t"/>
+    </Struct>
+    <Struct id="0x82" len="11" name="spin_response" database="false">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Spin Response Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Sequence number from a Spin Image Available message received by the member" len="4" name="sequence" offset="2" type="u32_t"/>
+      <Field comment="Number of Add Order messages which will be contained in this spin" len="4" name="order_count" offset="6" type="u32_t"/>
+      <Field comment="Accepted or reason for reject" len="1" name="status" offset="10" type="SpinResponseStatus"/>
+    </Struct>
+    <Struct id="0x2E" len="38" name="symbol_mapping" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Symbol Mapping Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Symbol right padded with spaces. " len="6" name="feed_symbol" offset="2" type="char_6_t"/>
+      <Field comment="OSI Symbol " len="21" name="osi_symbol" offset="8" type="char_21_t"/>
+      <Field comment="N = Normal C = Closing Only" len="1" name="symbol_condition" offset="29" type="SymbolCondition"/>
+      <Field comment="Symbol of underlying equity right padded with spaces." len="8" name="underlying" offset="30" type="char_8_t"/>
+    </Struct>
+    <Struct id="0x20" len="6" name="time" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Time Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Number of whole seconds from midnight Eastern Time" len="4" name="time" offset="2" type="u32_t"/>
+    </Struct>
+    <Struct id="0x2C" len="14" name="trade_break" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Trade Break Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Cboe execution identifier of the execution that was broken. Execution Id refers to previously sent Order Executed or Trade message." len="8" name="execution_id" offset="6" type="u64_t"/>
+    </Struct>
+    <Struct id="0x30" len="44" len2="43" name="trade_expanded" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Trade Message (long)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Obfuscated Order ID or Order Id of the executed order." len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="Always &quot;B&quot; = Buy Order regardless of resting side" len="1" name="side_indicator" offset="14" type="Side"/>
+      <Field comment="Incremental number of shares/contracts executed" len="4" name="quantity" offset="15" type="u32_t"/>
+      <Field comment="Symbol right padded with spaces. " len="8" name="symbol" offset="19" type="char_8_t"/>
+      <Field comment="The execution price of the order " len="8" name="price" offset="27" type="PriceLong_t"/>
+      <Field comment="Cboe generated day-unique execution identifier of this trade. Execution Id is also referenced in the Trade Break message." len="8" name="execution_id" offset="35" type="u64_t"/>
+      <Field comment="Options Only (byte not sent in Equities) (Space): Normal Trade O: Opening Trade S: Spread Trade A: SPIM Trade I: ISO Trade C: Combo Trade K: Cabinet Trade" len="1" name="trade_condition" offset="43" type="TradeCondition"/>
+    </Struct>
+    <Struct id="0x2A" len="42" len2="41" name="trade_long" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Trade Message (long)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Obfuscated Order ID or Order Id of the executed order." len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="Always &quot;B&quot; = Buy Order regardless of resting side" len="1" name="side_indicator" offset="14" type="Side"/>
+      <Field comment="Incremental number of shares/contracts executed" len="4" name="quantity" offset="15" type="u32_t"/>
+      <Field comment="Symbol right padded with spaces. " len="6" name="symbol" offset="19" type="char_6_t"/>
+      <Field comment="The execution price of the order " len="8" name="price" offset="25" type="PriceLong_t"/>
+      <Field comment="Cboe generated day-unique execution identifier of this trade. Execution Id is also referenced in the Trade Break message." len="8" name="execution_id" offset="33" type="u64_t"/>
+      <Field comment="Options Only (byte not sent in Equities) (Space): Normal Trade O: Opening Trade S: Spread Trade A: SPIM Trade I: ISO Trade C: Combo Trade K: Cabinet Trade" len="1" name="trade_condition" offset="41" type="TradeCondition"/>
+    </Struct>
+    <Struct id="0x2B" len="34" len2="33" name="trade_short" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Trade Message (short)" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Obfuscated Order ID or Order Id of the executed order." len="8" name="order_id" offset="6" type="u64_t"/>
+      <Field comment="Always &quot;B&quot; = Buy Order regardless of resting side" len="1" name="side_indicator" offset="14" type="Side"/>
+      <Field comment="Incremental Number of shares/contracts executed" len="2" name="quantity" offset="15" type="u16_t"/>
+      <Field comment="Symbol right padded with spaces. " len="6" name="symbol" offset="17" type="char_6_t"/>
+      <Field comment="The execution price of the order " len="2" name="price" offset="23" type="PriceShort_t"/>
+      <Field comment="Cboe generated day-unique execution identifier of this trade. Execution Id is also referenced in the Trade Break message." len="8" name="execution_id" offset="25" type="u64_t"/>
+      <Field comment="Options Only (byte not sent in Equities) (Space): Normal Trade O: Opening Trade S: Spread Trade A: SPIM Trade I: ISO Trade C: Combo Trade K: Cabinet Trade" len="1" name="trade_condition" offset="33" type="TradeCondition"/>
+    </Struct>
+    <Struct id="0x31" len="18" name="trading_status" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Trading Status message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Symbol right padded with spaces." len="8" name="symbol" offset="6" type="char_8_t"/>
+      <Field comment="A = Accepting Orders for Queuing (equities only) H = Halted Q = Quote-Only S = Exchange Specific Suspension T = Trading R = Opening Rotation" len="1" name="trading_status" offset="14" type="TradingStatusKind"/>
+      <Field comment="0 = No price test in effect 1 = Reg SHO price test restriction in effect" len="1" name="reg_sho_action" offset="15" type="RegShoAction"/>
+      <Field comment="H = Halted Q = Quote-Only T = Trading" len="1" name="gth_trading_status" offset="16" type="GthTradingStatus"/>
+      <Field comment="Reserved" len="1" name="reserved2" offset="17" type="char_t"/>
+    </Struct>
+    <Struct id="0xBC" len="6" name="transaction_begin" database="true">
+      <Field comment="Length of this message including this field." len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Transaction Begin Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp." len="4" name="time_offset" offset="2" type="u32_t"/>
+    </Struct>
+    <Struct id="0xBD" len="6" name="transaction_end" database="true">
+      <Field comment="Length of this message including this field." len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Transaction End Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp." len="4" name="time_offset" offset="2" type="u32_t"/>
+    </Struct>
+    <Struct id="0x97" len="6" name="unit_clear" database="true">
+      <Field comment="Length of this message including this field" len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Unit Clear Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp" len="4" name="time_offset" offset="2" type="u32_t"/>
+    </Struct>
+    <Struct id="0xD2" len="19" name="width_update" database="true">
+      <Field comment="Length of this message including this field." len="1" name="length" offset="0" type="u8_t"/>
+      <Field comment="Width Update Message" len="1" name="message_type" offset="1" type="u8_t"/>
+      <Field comment="Nanosecond offset from last unit timestamp." len="4" name="time_offset" offset="2" type="u32_t"/>
+      <Field comment="Underlying right padded with spaces." len="8" name="underlying" offset="6" type="char_8_t"/>
+      <Field comment="R = Regular V = Volatility" len="1" name="width_type" offset="14" type="WidthType"/>
+      <Field comment="Width multiplier" len="4" name="multiplier" offset="15" type="Multiplier_t"/>
+    </Struct>
+  </Structs>
+  <Operators>
+    <Operator body="if (::isprint(c)) return os.put(c); else return os &lt;&lt; (int)c;" name="std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, char_t c)"/>
+    <Operator body="return os &lt;&lt; (int)c;" name="std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, u8_t c)"/>
+  </Operators>
+</Model>
